@@ -1,0 +1,9 @@
+hadoop fs -rm -r /user/root/biwa_sales_hdp;
+hadoop jar $CP2HADOOP_HOME/jlib/orahivedp.jar oracle.hadoop.ctoh.CtohDriver \
+-D oracle.hadoop.ctoh.jdbc.url="jdbc:oracle:thin:@scaj43bda01:1521/pdborcl.us.oracle.com" \
+-D oracle.hadoop.ctoh.connection.username="bds" \
+-D oracle.hadoop.ctoh.connection.password="bds" \
+-D mapreduce.output.fileoutputformat.outputdir="biwa_sales_hdp" \
+-D oracle.hadoop.ctoh.splitterType="BLOCK_SPLITTER" \
+-D oracle.hadoop.ctoh.table="bds.biwa_sales_big" \
+-D oracle.hadoop.ctoh.maxSplits=100;
