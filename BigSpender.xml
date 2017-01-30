@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <WorkflowProcess Version="12.1.0.2.3" DBVersion="12.1.0.2.0" Schema="" xmlns="http://xmlns.oracle.com/odmr11">
     <Nodes>
-        <DataSource Id="10002" Name="BIWA_CUSTOMERS" Status="Ready">
+        <DataSource Id="10002" Name="BIWA_CUSTOMERS" Status="Complete">
             <Icon XCOORD="288" YCOORD="175"></Icon>
             <Messages/>
             <Parallelism Enable="true">
@@ -47,8 +47,8 @@ from "BDS"."BIWA_CUSTOMERS"  )</SQLExpression>
                 <NumberOfValues>10000</NumberOfValues>
             </DataGuideSettings>
         </DataSource>
-        <CreateTable TableName="OUTPUT_1_5" Table="true" Id="10062" Name="OUTPUT_1_5" Status="Ready">
-            <Icon XCOORD="338" YCOORD="317"></Icon>
+        <CreateTable TableName="OUTPUT_3_5" Table="true" Id="10085" Name="OUTPUT_3_5" Status="Ready">
+            <Icon XCOORD="395" YCOORD="334"></Icon>
             <Messages/>
             <Parallelism Enable="true">
                 <SystemDetermined/>
@@ -59,11 +59,9 @@ from "BDS"."BIWA_CUSTOMERS"  )</SQLExpression>
                     <TopN/>
                 </Method>
             </CacheSettings>
-            <SQLExpression>"N$10062" as (SELECT 
-"CUST_ID",
-"AMT",
-"SPENDING"
- FROM {INPUT_SOURCE} )</SQLExpression>
+            <SQLExpression>"N$10085" AS ( SELECT  "CUST_ID"  ,
+ "AMT"  ,
+ "SPENDING"   FROM {INPUT_SOURCE} )</SQLExpression>
             <DBAttributes>
                 <DBAttribute Key="No" Index="No" Name="CUST_ID" DataType="NUMBER" Status="Valid"/>
                 <DBAttribute Key="No" Index="No" Name="AMT" DataType="NUMBER" Status="Valid"/>
@@ -76,7 +74,7 @@ from "BDS"."BIWA_CUSTOMERS"  )</SQLExpression>
             </DataGuideSettings>
         </CreateTable>
         <Join UseCartesian="false" Id="10054" Name="Join" Status="Ready">
-            <Icon XCOORD="458" YCOORD="247"></Icon>
+            <Icon XCOORD="490" YCOORD="244"></Icon>
             <Messages/>
             <Parallelism Enable="true">
                 <SystemDetermined/>
@@ -100,18 +98,18 @@ from "BDS"."BIWA_CUSTOMERS"  )</SQLExpression>
 , "BIWA_CUSTOMERS"."M_STATUS"
 , "BIWA_CUSTOMERS"."PHONE"
 , "BIWA_CUSTOMERS"."STATE"
-, "OUTPUT_1_5"."SPENDING"
+, "OUTPUT_3_5"."SPENDING"
 
 FROM
 {INPUT_SOURCE:10002} "BIWA_CUSTOMERS"
-INNER JOIN {INPUT_SOURCE:10062} "OUTPUT_1_5"
-ON "BIWA_CUSTOMERS"."ID" = "OUTPUT_1_5"."CUST_ID"
+INNER JOIN {INPUT_SOURCE:10085} "OUTPUT_3_5"
+ON "BIWA_CUSTOMERS"."ID" = "OUTPUT_3_5"."CUST_ID"
 
  )</SQLExpression>
             <KeyColumns AutoSpec="No">
                 <JoinColumn Type="Inner">
                     <LeftColumn NodeId="10002" NodeName="BIWA_CUSTOMERS" Key="Yes" Name="ID" DataType="NUMBER" Status="Valid"/>
-                    <RightColumn NodeId="10062" NodeName="OUTPUT_1_5" Key="Yes" Name="CUST_ID" DataType="NUMBER" Status="Valid"/>
+                    <RightColumn NodeId="10085" NodeName="OUTPUT_3_5" Key="Yes" Name="CUST_ID" DataType="NUMBER" Status="Valid"/>
                 </JoinColumn>
             </KeyColumns>
             <OutputColumns AutoSpec="No">
@@ -127,11 +125,11 @@ ON "BIWA_CUSTOMERS"."ID" = "OUTPUT_1_5"."CUST_ID"
                 <RefDBColumn NodeId="10002" NodeName="BIWA_CUSTOMERS" Name="M_STATUS" DataType="VARCHAR2" Status="Valid"/>
                 <RefDBColumn NodeId="10002" NodeName="BIWA_CUSTOMERS" Name="PHONE" DataType="NUMBER" Status="Valid"/>
                 <RefDBColumn NodeId="10002" NodeName="BIWA_CUSTOMERS" Name="STATE" DataType="VARCHAR2" Status="Valid"/>
-                <RefDBColumn NodeId="10062" NodeName="OUTPUT_1_5" Name="SPENDING" DataType="CHAR" Status="Valid"/>
+                <RefDBColumn NodeId="10085" NodeName="OUTPUT_3_5" Name="SPENDING" DataType="CHAR" Status="Valid"/>
             </OutputColumns>
         </Join>
         <ClassificationBuild Id="10047" Name="Class Build" Status="Ready">
-            <Icon XCOORD="568" YCOORD="246"></Icon>
+            <Icon XCOORD="608" YCOORD="246"></Icon>
             <Messages/>
             <Parallelism Enable="true">
                 <SystemDetermined/>
@@ -650,8 +648,8 @@ ON "BIWA_CUSTOMERS"."ID" = "OUTPUT_1_5"."CUST_ID"
                 </ClassificationResult>
             </Results>
         </ClassificationBuild>
-        <SQLQuery HasWithClause="true" GenerateView="true" ViewName="SPENDERS4" Id="10004" Name="SQL Query" Status="Ready">
-            <Icon XCOORD="207" YCOORD="317"></Icon>
+        <SQLQuery HasWithClause="false" GenerateView="false" ViewName="OUTPUT_2_5" Id="10084" Name="SQL Query" Status="Complete">
+            <Icon XCOORD="248" YCOORD="340"></Icon>
             <Messages/>
             <Parallelism Enable="true">
                 <SystemDetermined/>
@@ -662,41 +660,88 @@ ON "BIWA_CUSTOMERS"."ID" = "OUTPUT_1_5"."CUST_ID"
                     <TopN/>
                 </Method>
             </CacheSettings>
-            <SQLExpression>"N$10004" AS (SELECT  "CUST_ID",  
- "AMT",  
- "SPENDING" 
- FROM "SPENDERS4")</SQLExpression>
-            <SQLQueryExpression>WITH big_spenders AS
- (SELECT /*+ MONITOR PARALLEL(64)*/
-   cust_id,
-   SUM(amount) amt,
-   'big spender' spending
-    FROM biwa_sales_json_col_view
-   GROUP BY cust_id
-   ORDER BY SUM(amount) DESC FETCH FIRST 5 PERCENT ROW ONLY),
-low_spenders AS
- (SELECT /*+ MONITOR PARALLEL(64)*/
-   cust_id,
-   SUM(amount) amt,
-   'low spender' spending
-    FROM biwa_sales_json_col_view
-   GROUP BY cust_id
-   ORDER BY SUM(amount) FETCH FIRST 5 PERCENT ROW ONLY)
-SELECT /*+ MONITOR PARALLEL(64)*/
+            <SQLExpression>"N$10084" as (SELECT /*+ MONITOR PARALLEL(64)*/
  *
-  FROM big_spenders
+  FROM (SELECT cust_id,
+               SUM(amount) amt,
+               'big spender' spending
+          FROM biwa_sales_json_col_view
+         GROUP BY cust_id
+         ORDER BY SUM(amount) DESC FETCH FIRST 5 PERCENT ROW ONLY)
 UNION ALL
 SELECT /*+ MONITOR PARALLEL(64)*/
  *
-  FROM low_spenders
+  FROM (SELECT /*+ MONITOR PARALLEL(64)*/
+         cust_id,
+         SUM(amount) amt,
+         'low spender' spending
+          FROM biwa_sales_json_col_view
+         GROUP BY cust_id
+         ORDER BY SUM(amount) FETCH FIRST 5 PERCENT ROW ONLY)
 UNION ALL
-SELECT /*+ MONITOR PARALLEL(64)*/
- cust_id,
- SUM(amount) amt,
- 'med spender' spending
+SELECT cust_id,
+       SUM(amount) amt,
+       'med spender' spending
   FROM biwa_sales_json_col_view
  WHERE cust_id NOT IN
- (SELECT cust_id FROM low_spenders UNION ALL SELECT cust_id FROM big_spenders)
+       (SELECT cust_id
+          FROM (SELECT /*+ MONITOR PARALLEL(64)*/
+                 cust_id,
+                 SUM(amount) amt,
+                 'low spender' spending
+                  FROM biwa_sales_json_col_view
+                 GROUP BY cust_id
+                 ORDER BY SUM(amount) FETCH FIRST 5 PERCENT ROW ONLY)
+        UNION ALL
+        SELECT cust_id
+          FROM (SELECT cust_id,
+                       SUM(amount) amt,
+                       'big spender' spending
+                  FROM biwa_sales_json_col_view
+                 GROUP BY cust_id
+                 ORDER BY SUM(amount) DESC FETCH FIRST 5 PERCENT ROW ONLY))
+ GROUP BY cust_id)
+</SQLExpression>
+            <SQLQueryExpression>SELECT /*+ MONITOR PARALLEL(64)*/
+ *
+  FROM (SELECT cust_id,
+               SUM(amount) amt,
+               'big spender' spending
+          FROM biwa_sales_json_col_view
+         GROUP BY cust_id
+         ORDER BY SUM(amount) DESC FETCH FIRST 5 PERCENT ROW ONLY)
+UNION ALL
+SELECT /*+ MONITOR PARALLEL(64)*/
+ *
+  FROM (SELECT /*+ MONITOR PARALLEL(64)*/
+         cust_id,
+         SUM(amount) amt,
+         'low spender' spending
+          FROM biwa_sales_json_col_view
+         GROUP BY cust_id
+         ORDER BY SUM(amount) FETCH FIRST 5 PERCENT ROW ONLY)
+UNION ALL
+SELECT cust_id,
+       SUM(amount) amt,
+       'med spender' spending
+  FROM biwa_sales_json_col_view
+ WHERE cust_id NOT IN
+       (SELECT cust_id
+          FROM (SELECT /*+ MONITOR PARALLEL(64)*/
+                 cust_id,
+                 SUM(amount) amt,
+                 'low spender' spending
+                  FROM biwa_sales_json_col_view
+                 GROUP BY cust_id
+                 ORDER BY SUM(amount) FETCH FIRST 5 PERCENT ROW ONLY)
+        UNION ALL
+        SELECT cust_id
+          FROM (SELECT cust_id,
+                       SUM(amount) amt,
+                       'big spender' spending
+                  FROM biwa_sales_json_col_view
+                 GROUP BY cust_id
+                 ORDER BY SUM(amount) DESC FETCH FIRST 5 PERCENT ROW ONLY))
  GROUP BY cust_id</SQLQueryExpression>
             <SQLQueryOutputColumns>
                 <Attribute Name="CUST_ID" DataType="NUMBER" Status="Valid"/>
@@ -716,12 +761,12 @@ SELECT /*+ MONITOR PARALLEL(64)*/
                 <Coordinates XCoordinate="0.0" YCoordinate="0.0"/>
             </ConnectorGraphicsInfo>
         </Link>
-        <Link Id="10063" From="10004" To="10062" Name="Link" Label="From &quot;SQL Query&quot; to &quot;OUTPUT_1_5&quot;">
+        <Link Id="10086" From="10084" To="10085" Name="Link" Label="From &quot;SQL Query&quot; to &quot;OUTPUT_3_5&quot;">
             <ConnectorGraphicsInfo>
                 <Coordinates XCoordinate="0.0" YCoordinate="0.0"/>
             </ConnectorGraphicsInfo>
         </Link>
-        <Link Id="10064" From="10062" To="10054" Name="Link" Label="From &quot;OUTPUT_1_5&quot; to &quot;Join&quot;">
+        <Link Id="10087" From="10085" To="10054" Name="Link" Label="From &quot;OUTPUT_3_5&quot; to &quot;Join&quot;">
             <ConnectorGraphicsInfo>
                 <Coordinates XCoordinate="0.0" YCoordinate="0.0"/>
             </ConnectorGraphicsInfo>
